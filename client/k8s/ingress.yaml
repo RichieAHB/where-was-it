@@ -1,0 +1,11 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: where-was-it-client-ingress
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: where-was-it-client-ip
+    networking.gke.io/managed-certificates: where-was-it-client-certificate
+spec:
+  backend:
+    serviceName: where-was-it-client-service
+    servicePort: 80

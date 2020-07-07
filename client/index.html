@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Where Was It?</title>
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+<button id="init">Init</button>
+<script type="x-shader/x-vertex" id="vertexShader">
+
+			varying vec3 vWorldPosition;
+
+			void main() {
+
+				vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
+				vWorldPosition = worldPosition.xyz;
+
+				gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+
+			}
+
+
+</script>
+
+<script type="x-shader/x-fragment" id="fragmentShader">
+
+			uniform vec3 skyTopColor;
+			uniform vec3 skyBottomColor;
+			uniform vec3 groundTopColor;
+			uniform vec3 groundBottomColor;
+			uniform float offset;
+			uniform float exponent;
+
+			varying vec3 vWorldPosition;
+
+			void main() {
+
+				float h = normalize( vWorldPosition + offset ).y;
+				if (h > 0.0) {
+				  gl_FragColor = vec4( mix( skyBottomColor, skyTopColor, pow( h, exponent ) ), 1.0 );
+				} else {
+  				gl_FragColor = vec4( mix( groundTopColor, groundBottomColor, pow( abs( h ), exponent ) ), 1.0 );
+  			}
+
+			}
+
+
+</script>
+
+<script src="src/main.js"></script>
+</body>
+</html>

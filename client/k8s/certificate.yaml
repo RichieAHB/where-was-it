@@ -1,0 +1,7 @@
+apiVersion: networking.gke.io/v1beta2
+kind: ManagedCertificate
+metadata:
+  name: where-was-it-client-certificate
+spec:
+  domains:
+    - where-was-it.exec.land
