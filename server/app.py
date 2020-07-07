@@ -9,6 +9,12 @@ app = Flask(__name__)
 CORS(app)
 
 
+# health check
+@app.route('/')
+def health_check():
+    return 'ok', 200
+
+
 @app.route('/get_earth_then')
 def get_earth_then():
     frame = get_observer_frame(*get_lat_lng())

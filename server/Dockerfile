@@ -8,4 +8,4 @@ RUN pip install -r /tmp/requirements.txt
 RUN cd ..
 COPY . .
 EXPOSE 5000
-CMD ["pipenv", "run", "python3", "-m", "flask", "run", "--host=0.0.0.0"]
+CMD ["python3", "-m", "flask", "run", "--host=0.0.0.0"]

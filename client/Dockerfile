@@ -2,7 +2,7 @@ FROM node:13 as build
 
 WORKDIR /app
 
-ENV BACKEND_HOST "https://where-was-it-backend.exec.town"
+ENV BACKEND_HOST "https://where-was-it-backend.exec.land"
 
 COPY package.json yarn.lock index.html ./
 COPY src ./src
