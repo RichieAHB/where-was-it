@@ -21,7 +21,12 @@ import {
   WebGLRenderer,
 } from "three";
 import { DeviceOrientationControls } from "three/examples/jsm/controls/DeviceOrientationControls";
-import { fetchBodies, fetchEarth } from "../servies/backend";
+import {
+  fetchBodies,
+  FetchBodiesResponse,
+  fetchEarth,
+  FetchEarthResponse,
+} from "../servies/backend";
 
 const createBody = (
   az: number,
@@ -49,7 +54,11 @@ const bodyLine = (
   ]);
   return new Line(geometry, material);
 };
-const renderIntoCanvas = (canvas: HTMLCanvasElement) => {
+const renderIntoCanvas = (
+  canvas: HTMLCanvasElement,
+  bodies: FetchBodiesResponse,
+  { earth, distance_miles }: FetchEarthResponse
+) => {
   const renderer = new WebGLRenderer({ canvas });
 
   const scene = new Scene();
@@ -141,35 +150,19 @@ const renderIntoCanvas = (canvas: HTMLCanvasElement) => {
 
   window.addEventListener("deviceorientation", onDeviceOrientation, false);
 
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      Promise.all([
-        fetchBodies(pos.coords.latitude, pos.coords.longitude),
-        fetchEarth(pos.coords.latitude, pos.coords.longitude, "1981-03-08"),
-      ])
-        .then(([bodies, { earth, distance_miles }]) => {
-          const moon = createBody(bodies.moon.az, bodies.moon.alt);
-          scene.add(moon);
-          const sun = createBody(bodies.sun.az, bodies.sun.alt, true, 0xffff00);
-          scene.add(sun);
-          const earthThen = createBody(earth.az, earth.alt, true, 0xff0000);
-          scene.add(earthThen);
-          scene.add(bodyLine(moon));
-          scene.add(bodyLine(earthThen));
-          scene.add(bodyLine(sun));
+  const moon = createBody(bodies.moon.az, bodies.moon.alt);
+  scene.add(moon);
+  const sun = createBody(bodies.sun.az, bodies.sun.alt, true, 0xffff00);
+  scene.add(sun);
+  const earthThen = createBody(earth.az, earth.alt, true, 0xff0000);
+  scene.add(earthThen);
+  scene.add(bodyLine(moon));
+  scene.add(bodyLine(earthThen));
+  scene.add(bodyLine(sun));
 
-          const directionalLight = new DirectionalLight(0xffffff, 1);
-          directionalLight.position.copy(sun.position);
-          scene.add(directionalLight);
-        })
-        .catch((e) => {
-          alert(`Couldn't connect to ${process.env.BACKEND_HOST} ${e}`);
-        });
-    },
-
-    (e) => alert(e.message),
-    { enableHighAccuracy: true }
-  );
+  const directionalLight = new DirectionalLight(0xffffff, 1);
+  directionalLight.position.copy(sun.position);
+  scene.add(directionalLight);
 
   return () => {
     animationFrame !== null && cancelAnimationFrame(animationFrame);

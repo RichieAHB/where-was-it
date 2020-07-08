@@ -1,10 +1,5 @@
 import * as React from "react";
 import { useCallback, useState } from "react";
-import styled from "styled-components";
-
-const Wrapper = styled.div`
-  padding: 1em;
-`;
 
 type DateInputProps = {
   onDateSelected: (date: string) => void;
@@ -20,7 +15,7 @@ const DateInput = ({ onDateSelected }: DateInputProps) => {
     [date]
   );
   return (
-    <Wrapper>
+    <>
       <p>
         Select a date in the past (perhaps the day you were born?) to visualize
         where the earth was in the Solar System relative to where we are now:
@@ -36,7 +31,7 @@ const DateInput = ({ onDateSelected }: DateInputProps) => {
           {date && <button>Where was it?</button>}
         </label>
       </form>
-    </Wrapper>
+    </>
   );
 };
 

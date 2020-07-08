@@ -1,4 +1,4 @@
-type FetchBodiesResponse = {
+export type FetchBodiesResponse = {
   moon: {
     alt: number;
     az: number;
@@ -9,7 +9,7 @@ type FetchBodiesResponse = {
   };
 };
 
-type FetchEarthResponse = {
+export type FetchEarthResponse = {
   earth: {
     alt: number;
     az: number;
