@@ -42,7 +42,6 @@ def get_bodies():
 def get_observer_frame(lat, lon):
     earth_location = EarthLocation.from_geodetic(lat, lon)
     now = Time.now()
-    print(now)
     return AltAz(location=earth_location, obstime=now)
 
 
