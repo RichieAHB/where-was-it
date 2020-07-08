@@ -44,7 +44,9 @@ const Layout = ({ children }: LayoutProps) => {
         </Subtitle>
       </Bookend>
       <Main>{children}</Main>
-      <Bookend>Made by @richieahb</Bookend>
+      <Bookend>
+        Made by <a href="https://twitter.com/RichieAHB">@richieahb</a>
+      </Bookend>
     </Container>
   );
 };
