@@ -22,6 +22,7 @@ spec:
     spec:
       containers:
         - name: where-was-it-backend
-          image: {{IMAGE_NAME}}
+          # leave this for kustomize
+          image: gcr.io/PROJECT_ID/IMAGE:TAG
           ports:
             - containerPort: 5000

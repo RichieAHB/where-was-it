@@ -1,15 +1,15 @@
 set -ex
 
 REV_TAG=$(git log -1 --pretty=format:%h)
-BUILD_ID="where-was-it-backend:$REV_TAG"
+IMAGE_NAME="where-was-it-backend"
 REGISTRY_LOCATION=gcr.io/rbeddington-where-was-it
-IMAGE_NAME="$REGISTRY_LOCATION/$BUILD_ID"
+IMAGE_URI="$REGISTRY_LOCATION/$IMAGE_NAME:$REV_TAG"
 
-docker build -t "$BUILD_ID" .
-docker tag "$BUILD_ID" "$IMAGE_NAME"
-docker push "$IMAGE_NAME"
-template=$(< "k8s/deployment.yaml" sed "s~{{IMAGE_NAME}}~$IMAGE_NAME~g")
-echo "$template" | kubectl apply -f -
-kubectl apply -f k8s/certificate.yaml
-kubectl apply -f k8s/service.yaml
-kubectl apply -f k8s/ingress.yaml
+docker build -t "$IMAGE_NAME" .
+docker tag "$IMAGE_NAME" "$IMAGE_URI"
+docker push "$IMAGE_URI"
+
+pushd k8s
+kustomize edit set image "gcr.io/PROJECT_ID/IMAGE:TAG=$IMAGE_URI"
+kubectl apply -k ./
+popd
