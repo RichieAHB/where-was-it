@@ -4,12 +4,21 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "@types/styled-components": "^5.1.1",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "styled-components": "^5.1.1",
     "three": "^0.118.3"
   },
   "devDependencies": {
-    "parcel-bundler": "^1.12.4"
+    "@types/react": "^16.9.41",
+    "@types/react-dom": "^16.9.8",
+    "parcel-bundler": "^1.12.4",
+    "prettier": "^2.0.5",
+    "typescript": "^3.9.6"
   },
   "scripts": {
-    "dist": "yarn parcel build index.html"
+    "dist": "yarn parcel build index.html",
+    "dev": "yarn parcel --https index.html"
   }
 }
