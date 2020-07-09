@@ -62,7 +62,7 @@ const Layout = ({ children }: LayoutProps) => {
   return (
     <Container style={{ height }}>
       <Bookend>
-        <Title>Where was it?</Title>
+        <Title>PastFinder</Title>
         <Subtitle>
           A visualisation of where the earth was in the solar system on a given
           date.

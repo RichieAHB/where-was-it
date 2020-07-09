@@ -98,7 +98,7 @@ const DateInput = ({ onDateSelected }: DateInputProps) => {
             value={time}
             onChange={setTime}
           />
-          <Button>Where was it?</Button>
+          <Button>Find it</Button>
         </Form>
       </FormWrapper>
     </>
