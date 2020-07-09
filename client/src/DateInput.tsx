@@ -68,7 +68,13 @@ const DateInput = ({ onDateSelected }: DateInputProps) => {
   const onSubmit = useCallback(
     (e) => {
       e.preventDefault();
-      date && time && onDateSelected(`${date}T${time}`);
+      const dateTime = new Date(`${date}T${time}`);
+      const tzo = dateTime.getTimezoneOffset();
+      const sign = tzo > 0 ? "-" : "+";
+      const absTzo = Math.abs(tzo);
+      const hour = `${(absTzo / 60)}`.padStart(2, "0");
+      const min = `${Math.floor(absTzo % 60)}`.padStart(2, "0");
+      onDateSelected(`${date}T${time}:00${sign}${hour}:${min}`);
     },
     [date, time]
   );
@@ -92,7 +98,7 @@ const DateInput = ({ onDateSelected }: DateInputProps) => {
             value={time}
             onChange={setTime}
           />
-          <Button disabled={!date}>Where was it?</Button>
+          <Button>Where was it?</Button>
         </Form>
       </FormWrapper>
     </>

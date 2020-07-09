@@ -52,14 +52,12 @@ const Viewer = ({ date, hasOrientationPermission }: ViewerProps) => {
           Promise.all([
             fetchBodies(
               pos.coords.latitude,
-              pos.coords.longitude,
-              new Date().getTimezoneOffset()
+              pos.coords.longitude
             ),
             fetchEarth(
               pos.coords.latitude,
               pos.coords.longitude,
-              date,
-              new Date().getTimezoneOffset()
+              date
             ),
           ]).then(([body, earth]) => {
             renderIntoCanvas(current, body, earth, hasOrientationPermission);

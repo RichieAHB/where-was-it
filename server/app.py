@@ -3,6 +3,7 @@ from astropy.coordinates import AltAz, EarthLocation, get_sun, get_moon
 from astropy.time import Time
 from flask import Flask, request, abort, jsonify, make_response
 from flask_cors import CORS
+from dateutil.parser import isoparse
 from sunpy.coordinates import get_earth
 
 app = Flask(__name__)
@@ -17,8 +18,10 @@ def health_check():
 
 @app.route('/get_earth_then')
 def get_earth_then():
-    frame = get_observer_frame(*get_lat_lng(), get_tz_offset())
-    then = Time(get_when())
+    frame = get_observer_frame(*get_lat_lng())
+    when = get_when()
+    print(when)
+    then = Time(when).to_datetime(timezone=when.tzinfo)
     earth_pos_then = get_in_frame(get_earth, frame, then)
     earth_pos_now = get_in_frame(get_earth, frame)
     distance = earth_pos_then.separation_3d(earth_pos_now).to(u.imperial.mile)
@@ -30,7 +33,7 @@ def get_earth_then():
 
 @app.route('/get_bodies')
 def get_bodies():
-    frame = get_observer_frame(*get_lat_lng(), get_tz_offset())
+    frame = get_observer_frame(*get_lat_lng())
     sun_pos = get_in_frame(get_sun, frame)
     moon_pos = get_in_frame(get_moon, frame)
     return jsonify({
@@ -45,9 +48,9 @@ def get_bodies():
 #     return response
 
 
-def get_observer_frame(lat, lon, tz_offset_mins):
+def get_observer_frame(lat, lon):
     earth_location = EarthLocation.from_geodetic(lat, lon)
-    now = Time.now() - (tz_offset_mins * u.min)
+    now = Time.now()
     return AltAz(location=earth_location, obstime=now)
 
 
@@ -67,18 +70,11 @@ def get_lat_lng():
     return float(lon), float(lat)
 
 
-def get_tz_offset():
-    offset = request.args.get("tz_offset_mins")
-    if offset is None:
-        abort(make_response(jsonify(message="`tz_offset_mins` must be specified in the query params"), 400))
-    return float(offset)
-
-
 def get_when():
     when = request.args.get("when")
     if when is None:
         abort(make_response(jsonify(message="`when` must be specified in the query params"), 400))
-    return when
+    return isoparse(when)
 
 
 # only run this locally
