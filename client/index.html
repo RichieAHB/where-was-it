@@ -1,66 +1,82 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Where Was It?</title>
-  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;562&display=swap" rel="stylesheet">
-  <style>
-    html,
-    body {
-      font-family: 'Lora', serif;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      width: 100%;
-    }
-  </style>
-</head>
-<body>
-<div id="react-root"></div>
-<script type="x-shader/x-vertex" id="vertexShader">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Where Was It?</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Megrim&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Megrim&family=Roboto+Slab:wght@300&display=swap"
+      rel="stylesheet"
+    />
 
-			varying vec3 vWorldPosition;
+    <style>
+      *,
+      :before,
+      :after {
+        box-sizing: border-box;
+      }
 
-			void main() {
+      html,
+      body {
+        font-family: "Roboto Slab", serif;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+      }
 
-				vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
-				vWorldPosition = worldPosition.xyz;
+      h1 {
+        font-family: "Megrim", cursive;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="react-root"></div>
+    <script type="x-shader/x-vertex" id="vertexShader">
 
-				gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+      varying vec3 vWorldPosition;
 
-			}
+      void main() {
 
+      	vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
+      	vWorldPosition = worldPosition.xyz;
 
-</script>
+      	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
 
-<script type="x-shader/x-fragment" id="fragmentShader">
+      }
+    </script>
 
-			uniform vec3 skyTopColor;
-			uniform vec3 skyBottomColor;
-			uniform vec3 groundTopColor;
-			uniform vec3 groundBottomColor;
-			uniform float offset;
-			uniform float exponent;
+    <script type="x-shader/x-fragment" id="fragmentShader">
 
-			varying vec3 vWorldPosition;
+      uniform vec3 skyTopColor;
+      uniform vec3 skyBottomColor;
+      uniform vec3 groundTopColor;
+      uniform vec3 groundBottomColor;
+      uniform float offset;
+      uniform float exponent;
 
-			void main() {
+      varying vec3 vWorldPosition;
 
-				float h = normalize( vWorldPosition + offset ).y;
-				if (h > 0.0) {
-				  gl_FragColor = vec4( mix( skyBottomColor, skyTopColor, pow( h, exponent ) ), 1.0 );
-				} else {
-  				gl_FragColor = vec4( mix( groundTopColor, groundBottomColor, pow( abs( h ), exponent ) ), 1.0 );
-  			}
+      void main() {
 
-			}
+      	float h = normalize( vWorldPosition + offset ).y;
+      	if (h > 0.0) {
+      	  gl_FragColor = vec4( mix( skyBottomColor, skyTopColor, pow( h, exponent ) ), 1.0 );
+      	} else {
+      			gl_FragColor = vec4( mix( groundTopColor, groundBottomColor, pow( abs( h ), exponent ) ), 1.0 );
+      		}
 
+      }
+    </script>
 
-</script>
-
-<script src="src/index.tsx"></script>
-</body>
+    <script src="src/index.tsx"></script>
+  </body>
 </html>

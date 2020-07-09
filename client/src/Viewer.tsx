@@ -2,11 +2,11 @@ import * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import { renderIntoCanvas } from "./three/renderIntoCanvas";
 import styled from "styled-components";
-import { DirectionalLight } from "three";
 import { fetchBodies, fetchEarth } from "./servies/backend";
 
 type ViewerProps = {
   date: string;
+  hasOrientationPermission: boolean;
 };
 
 const Wrapper = styled.div`
@@ -17,6 +17,9 @@ const Wrapper = styled.div`
 
 const Canvas = styled.canvas`
   height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
   width: 100%;
 `;
 
@@ -30,7 +33,12 @@ const Info = styled.div`
   right: 0;
 `;
 
-const Viewer = ({ date }: ViewerProps) => {
+const Color = styled.span`
+  font-weight: 700;
+  color: ${(props) => props.color};
+`;
+
+const Viewer = ({ date, hasOrientationPermission }: ViewerProps) => {
   const ref = useRef<HTMLCanvasElement>(null);
   const [loading, setLoading] = useState(true);
   const [distance, setDistance] = useState("");
@@ -42,10 +50,19 @@ const Viewer = ({ date }: ViewerProps) => {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           Promise.all([
-            fetchBodies(pos.coords.latitude, pos.coords.longitude),
-            fetchEarth(pos.coords.latitude, pos.coords.longitude, date),
+            fetchBodies(
+              pos.coords.latitude,
+              pos.coords.longitude,
+              new Date().getTimezoneOffset()
+            ),
+            fetchEarth(
+              pos.coords.latitude,
+              pos.coords.longitude,
+              date,
+              new Date().getTimezoneOffset()
+            ),
           ]).then(([body, earth]) => {
-            renderIntoCanvas(current, body, earth);
+            renderIntoCanvas(current, body, earth, hasOrientationPermission);
             setDistance(`${Math.round(earth.distance_miles)} miles`);
             setLoading(false);
           });
@@ -62,12 +79,14 @@ const Viewer = ({ date }: ViewerProps) => {
       <Wrapper style={{ visibility: loading ? "hidden" : "visible" }}>
         <Canvas ref={ref} />
         <Info>
-          <p>Distance: {distance}</p>
+          <p>Distance from previous earth position: {distance}</p>
           <p>
-            Rotate your device to see the bodies. The white dot is the moon, the{" "}
-            <span style={{ color: "yellow" }}>yellow</span> is the sun and the{" "}
-            <span style={{ color: "red" }}>red</span> is the earth position at
-            the date specified.
+            The <Color color="white">white</Color> dot is the moon in its
+            current position, the <Color color="yellow">yellow</Color> is the
+            sun in its current position and the{" "}
+            <Color color="#88aaff">light blue</Color> is the earth position at
+            the date specified. The <Color color="#d80480">pink</Color> line is
+            North.
           </p>
         </Info>
       </Wrapper>

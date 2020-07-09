@@ -6,42 +6,40 @@ import { Viewer } from "./Viewer";
 import { Layout } from "./Layout";
 import styled from "styled-components";
 
-const hasOrientation = !!window.DeviceOrientationEvent.requestPermission;
-
 const Wrapper = styled.div`
+  min-height: 100%;
   padding: 1em;
 `;
 
 const App = () => {
-  const [error, setError] = useState(
-    hasOrientation
-      ? ""
-      : "Unsupported browser, please use a browser that emits device orientation events (i.e. a mobile browser)."
-  );
-
   const [date, setDate] = useState("");
+  const [hasOrientationPermission, setHasOrientationPermission] = useState(
+    false
+  );
   return (
     <Layout>
       {date ? (
-        <Viewer date={date} />
+        <Viewer
+          hasOrientationPermission={hasOrientationPermission}
+          date={date}
+        />
       ) : (
         <Wrapper>
-          {hasOrientation && (
-            <DateInput
-              onDateSelected={(date) => {
-                window.DeviceOrientationEvent.requestPermission().then(
-                  (response) => {
-                    if (response !== "granted") {
-                      setError("Unable to display location without permission");
-                    } else {
-                      setDate(date);
-                    }
-                  }
-                );
-              }}
-            />
-          )}
-          {error}
+          <DateInput
+            onDateSelected={(date) => {
+              (
+                window.DeviceOrientationEvent.requestPermission ||
+                (() => Promise.resolve(""))
+              )().then((response) => {
+                if (response !== "granted") {
+                  setHasOrientationPermission(false);
+                } else {
+                  setHasOrientationPermission(true);
+                }
+                setDate(date);
+              });
+            }}
+          />
         </Wrapper>
       )}
     </Layout>

@@ -1,21 +1,45 @@
 import * as React from "react";
 import styled from "styled-components";
+import { useEffect, useState } from "react";
+
+const getWindowSize = () => ({
+  height: window.innerHeight,
+  width: window.innerWidth,
+});
+
+const useWindowSize = () => {
+  const [size, setSize] = useState(getWindowSize());
+
+  useEffect(() => {
+    const handler = () => setSize(getWindowSize());
+    window.addEventListener("resize", handler);
+    return () => {
+      window.removeEventListener("resize", handler);
+    };
+  });
+  return size;
+};
 
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  height: 85vh;
   width: 100%;
 `;
 
 const Bookend = styled.header`
+  background-color: #2b2a4d;
+  color: white;
   flex-grow: 0;
   padding: 1em;
+  
+  a {
+    color: white;
+  }
 `;
 
 const Title = styled.h1`
-  font-size: 20px;
-  font-weight: 400;
+  color: #d80480;
+  font-size: 3rem;
   margin: 0 0 0.25em;
 `;
 
@@ -34,8 +58,9 @@ type LayoutProps = {
 };
 
 const Layout = ({ children }: LayoutProps) => {
+  const { height } = useWindowSize();
   return (
-    <Container>
+    <Container style={{ height }}>
       <Bookend>
         <Title>Where was it?</Title>
         <Subtitle>
