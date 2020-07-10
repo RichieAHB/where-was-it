@@ -8,9 +8,11 @@ const Inner = styled.div`
   border-radius: 50%;
   color: white;
   display: flex;
+  font-size: 14px;
   height: 80px;
   justify-content: center;
   position: relative;
+  text-align: center;
   width: 80px;
 `;
 
@@ -59,7 +61,7 @@ const Planet = ({ radius, year }: PlanetProps) => {
 
 const Loader = ({ ref, ...props }: JSX.IntrinsicElements["div"]) => (
   <Inner {...props}>
-    Loading
+    Fetching positions
     <Planet radius={90} year={1.5} />
     <Planet radius={110} year={2} />
     <Planet radius={130} year={2.5} />

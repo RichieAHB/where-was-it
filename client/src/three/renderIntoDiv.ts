@@ -21,16 +21,16 @@ import {
   Vector2,
   Vector3,
   WebGLRenderer,
-  Raycaster,
   Frustum,
   Matrix4,
 } from "three";
-import { DeviceOrientationControls } from "three/examples/jsm/controls/DeviceOrientationControls";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
 import { FetchBodiesResponse, FetchEarthResponse } from "../servies/backend";
 import * as Colors from "../colors";
+import { SpinControls } from "./SpinControls";
+import { DeviceHeadingControls } from "./DeviceHeadingControls";
 
 const createBody = (
   az: number,
@@ -47,6 +47,7 @@ const createBody = (
   body.position.setFromSphericalCoords(100, Math.PI / 2 - alt, Math.PI - az);
   return body;
 };
+
 const bodyLine = (
   body: Mesh<Geometry, MeshBasicMaterial | MeshLambertMaterial>
 ) => {
@@ -59,79 +60,6 @@ const bodyLine = (
   ]);
   return new Line(geometry, material);
 };
-
-class DeviceHeadingControls extends DeviceOrientationControls {
-  private readonly onDeviceOrientation: (e: DeviceOrientationEvent) => void;
-
-  constructor(camera: Camera) {
-    super(camera);
-    this.onDeviceOrientation = (e: DeviceOrientationEvent) => {
-      const webkitCompassAccuracy = +(e as any).webkitCompassAccuracy;
-      if (
-        this.alphaOffset === 0 &&
-        !e.absolute &&
-        webkitCompassAccuracy > 0 &&
-        webkitCompassAccuracy < 50
-      ) {
-        this.alphaOffset = MathUtils.degToRad(
-          (720 - (e.alpha + (e as any).webkitCompassHeading)) % 360
-        );
-      }
-    };
-
-    window.addEventListener(
-      "deviceorientation",
-      this.onDeviceOrientation,
-      false
-    );
-
-    const prevDisconnect = this.disconnect.bind(this);
-    this.disconnect = () => {
-      prevDisconnect();
-      window.addEventListener(
-        "deviceorientation",
-        this.onDeviceOrientation,
-        false
-      );
-    };
-  }
-}
-
-class SpinControls {
-  private mouseDown: boolean = false;
-
-  constructor(private camera: Camera) {
-    this.connect();
-    this.camera.rotation.order = "YXZ";
-  }
-
-  connect() {
-    window.addEventListener("mousedown", (e) => {
-      this.mouseDown = true;
-    });
-
-    window.addEventListener("mouseup", () => {
-      this.mouseDown = false;
-    });
-
-    window.addEventListener("mousemove", (event) => {
-      if (!this.mouseDown) return;
-      this.camera.rotation.x = Math.max(
-        Math.min(
-          this.camera.rotation.x + MathUtils.degToRad(event.movementY * 0.25),
-          Math.PI / 2
-        ),
-        -(Math.PI / 2)
-      );
-      this.camera.rotation.y += MathUtils.degToRad(event.movementX * 0.25);
-      this.camera.updateMatrix();
-    });
-  }
-
-  update() {}
-
-  disconnect() {}
-}
 
 const getControls = (hasOrientationPermission: boolean, camera: Camera) =>
   hasOrientationPermission
@@ -148,18 +76,6 @@ const renderIntoDiv = (
   div.appendChild(canvas);
 
   const arrowTopPx = 20;
-
-  const direction = document.createElement("div");
-  direction.innerText = "⇧";
-  direction.style.position = "absolute";
-  direction.style.left = "50%";
-  direction.style.top = `${arrowTopPx}px`;
-  direction.style.marginLeft = "-10px";
-  direction.style.color = Colors.strong.toString();
-  direction.style.textShadow = "-2px -2px 4px rgba(0, 0, 0, 0.3)";
-  direction.style.transformOrigin = "50% 50%";
-  direction.style.fontSize = "24px";
-  div.appendChild(direction);
 
   const arrowNDCCoord = new Vector3(0, 0, 0.5);
 
@@ -271,6 +187,18 @@ const renderIntoDiv = (
   animate();
 
   return (bodies: FetchBodiesResponse, { earth }: FetchEarthResponse) => {
+    const direction = document.createElement("div");
+    direction.innerText = "⇧";
+    direction.style.position = "absolute";
+    direction.style.left = "50%";
+    direction.style.top = `${arrowTopPx}px`;
+    direction.style.marginLeft = "-10px";
+    direction.style.color = Colors.strong.toString();
+    direction.style.textShadow = "-2px -2px 4px rgba(0, 0, 0, 0.3)";
+    direction.style.transformOrigin = "50% 50%";
+    direction.style.fontSize = "24px";
+    div.appendChild(direction);
+
     const moon = createBody(bodies.moon.az, bodies.moon.alt);
     scene.add(moon);
     const sun = createBody(bodies.sun.az, bodies.sun.alt, true, 0xffff00, 2);
