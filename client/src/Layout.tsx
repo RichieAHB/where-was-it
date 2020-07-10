@@ -38,8 +38,11 @@ const Bookend = styled.header`
   }
 `;
 
-const Title = styled.h1`
+const Title = styled.h1.attrs((props) => ({
+  role: props.onClick && "button",
+}))`
   color: ${strong.toString()};
+  cursor: ${(props) => (props.onClick ? "pointer" : "default")};
   font-size: 3rem;
   margin: 0 0 0.25em;
 `;
@@ -59,14 +62,15 @@ const Main = styled.main`
 
 type LayoutProps = {
   children: React.ReactNode;
+  onTitleClick?: () => void;
 };
 
-const Layout = ({ children }: LayoutProps) => {
+const Layout = ({ children, onTitleClick }: LayoutProps) => {
   const { height } = useWindowSize();
   return (
     <Container style={{ height }}>
       <Bookend>
-        <Title>PastFinder</Title>
+        <Title onClick={onTitleClick}>PastFinder</Title>
         <Subtitle>
           A visualisation of where the earth was in the solar system on a given
           date.

@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useCallback } from "react";
 import { render } from "react-dom";
 import { DateInput } from "./DateInput";
 import { useState } from "react";
@@ -16,8 +17,11 @@ const App = () => {
   const [hasOrientationPermission, setHasOrientationPermission] = useState(
     false
   );
+
+  const goHome = useCallback(() => setDate(""), []);
+
   return (
-    <Layout>
+    <Layout onTitleClick={goHome}>
       {date ? (
         <Viewer
           hasOrientationPermission={hasOrientationPermission}
