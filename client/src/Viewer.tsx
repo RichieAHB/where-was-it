@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { renderIntoCanvas } from "./three/renderIntoCanvas";
 import styled from "styled-components";
 import { fetchBodies, fetchEarth } from "./servies/backend";
+import { Info } from "./Info";
 
 type ViewerProps = {
   date: string;
@@ -23,12 +24,9 @@ const ThreeContainer = styled.div`
   width: 100%;
 `;
 
-const Info = styled.div`
-  background: rgba(0, 0, 0, 0.75);
+const InfoWrap = styled(Info)`
   bottom: 0;
-  color: white;
   left: 0;
-  padding: 1em;
   position: absolute;
   right: 0;
 `;
@@ -69,7 +67,7 @@ const Viewer = ({ date, hasOrientationPermission }: ViewerProps) => {
       {loading ? "Loading ..." : ""}
       <Wrapper style={{ visibility: loading ? "hidden" : "visible" }}>
         <ThreeContainer ref={ref} />
-        <Info>
+        <InfoWrap>
           <p>Distance from previous earth position: {distance}</p>
           <p>
             The <Color color="white">white</Color> dot is the moon in its
@@ -79,7 +77,7 @@ const Viewer = ({ date, hasOrientationPermission }: ViewerProps) => {
             the date specified. The <Color color="#d80480">pink</Color> line is
             North.
           </p>
-        </Info>
+        </InfoWrap>
       </Wrapper>
     </Wrapper>
   );
