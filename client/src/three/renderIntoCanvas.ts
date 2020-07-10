@@ -73,7 +73,6 @@ class DeviceHeadingControls extends DeviceOrientationControls {
         webkitCompassAccuracy > 0 &&
         webkitCompassAccuracy < 50
       ) {
-        console.log("here", webkitCompassAccuracy);
         this.alphaOffset = MathUtils.degToRad(
           (720 - (e.alpha + (e as any).webkitCompassHeading)) % 360
         );
@@ -150,16 +149,21 @@ const renderIntoDiv = (
   canvas.style.height = "100%";
   div.appendChild(canvas);
 
+  const arrowTopPx = 20;
+
   const direction = document.createElement("div");
   direction.innerText = "⇧";
   direction.style.position = "absolute";
   direction.style.left = "50%";
-  direction.style.top = "20px";
+  direction.style.top = `${arrowTopPx}px`;
   direction.style.marginLeft = "-10px";
   direction.style.color = Colors.strong.toString();
   direction.style.textShadow = "-2px -2px 4px rgba(0, 0, 0, 0.3)";
+  direction.style.transformOrigin = "50% 50%";
   direction.style.fontSize = "24px";
   div.appendChild(direction);
+
+  const arrowNDCCoord = new Vector3(0, 0, 0.5);
 
   const renderer = new WebGLRenderer({ canvas });
 
@@ -196,6 +200,7 @@ const renderIntoDiv = (
     camera.updateProjectionMatrix();
     renderer.setSize(offsetWidth, offsetHeight, false);
     composer.setSize(offsetWidth, offsetHeight);
+    arrowNDCCoord.setY(-(arrowTopPx / offsetHeight) * 2 + 1);
   };
 
   const composer = new EffectComposer(renderer);
@@ -276,6 +281,11 @@ const renderIntoDiv = (
 
   let animationFrame: number | null = null;
 
+  const earthPos3 = new Vector3();
+  const earthDir3 = new Vector3();
+  const earthPos = new Vector2();
+  const earthDir = new Vector2();
+
   function animate() {
     animationFrame = requestAnimationFrame(animate);
     camera.updateMatrixWorld();
@@ -288,12 +298,22 @@ const renderIntoDiv = (
     if (frustum.intersectsObject(earthThen)) {
       direction.style.visibility = `hidden`;
     } else {
-      const earthPos = earthThen.position.clone();
-      camera.worldToLocal(earthPos);
-      const earthDir = new Vector2(earthPos.x, earthPos.y).normalize();
-      direction.style.transform = `rotate(${MathUtils.radToDeg(
-        -earthDir.angle() + Math.PI / 2
-      )}deg)`;
+      earthDir3
+        .copy(arrowNDCCoord)
+        .unproject(camera);
+      earthPos3.copy(earthThen.position);
+      const cameraPos = new Vector3();
+      camera.getWorldPosition(cameraPos);
+      camera.worldToLocal(earthPos3);
+      camera.worldToLocal(earthDir3);
+      earthPos3.normalize();
+      earthDir3.normalize();
+      earthPos.set(earthPos3.x, earthPos3.y);
+      earthDir.set(earthDir3.x, earthDir3.y);
+      const rotationAmount = MathUtils.radToDeg(
+        -earthPos.sub(earthDir).angle() + Math.PI / 2
+      );
+      direction.style.transform = `rotate(${rotationAmount}deg)`;
       direction.style.visibility = `visible`;
     }
     controls.update();
