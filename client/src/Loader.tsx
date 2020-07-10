@@ -5,6 +5,7 @@ import * as Colors from "./colors";
 const Inner = styled.div`
   align-items: center;
   background-color: ${Colors.deep.toString()};
+  box-shadow: 0 0 100px 0 ${Colors.strong.withAlpha(0.75).toString("rgba")};
   border-radius: 50%;
   color: white;
   display: flex;

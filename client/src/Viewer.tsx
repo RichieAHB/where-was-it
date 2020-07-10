@@ -5,6 +5,7 @@ import styled from "styled-components";
 import { fetchBodies, fetchEarth } from "./servies/backend";
 import { Info } from "./Info";
 import { Loader } from "./Loader";
+import * as Colors from "./colors";
 
 type ViewerProps = {
   date: string;
@@ -85,8 +86,8 @@ const Viewer = ({ date, hasOrientationPermission }: ViewerProps) => {
             current position, the <Color color="yellow">yellow</Color> is the
             sun in its current position and the{" "}
             <Color color="#88aaff">light blue</Color> is the earth position at
-            the date specified. The <Color color="#d80480">pink</Color> line is
-            North.
+            the date specified. The{" "}
+            <Color color={Colors.strong.toString()}>pink</Color> line is North.
           </p>
         </InfoWrap>
       </Wrapper>
