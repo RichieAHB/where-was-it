@@ -1,9 +1,10 @@
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
-import { renderIntoCanvas } from "./three/renderIntoCanvas";
+import { renderIntoDiv } from "./three/renderIntoDiv";
 import styled from "styled-components";
 import { fetchBodies, fetchEarth } from "./servies/backend";
 import { Info } from "./Info";
+import { Loader } from "./Loader";
 
 type ViewerProps = {
   date: string;
@@ -13,6 +14,16 @@ type ViewerProps = {
 const Wrapper = styled.div`
   height: 100%;
   position: relative;
+  width: 100%;
+`;
+
+const LoaderWrapper = styled.div<{ show: boolean }>`
+  display: flex;
+  justify-content: center;
+  opacity: ${(props) => (props.show ? 1 : 0)};
+  position: absolute;
+  top: 50px;
+  transition: opacity 0.4s ease-out;
   width: 100%;
 `;
 
@@ -45,13 +56,14 @@ const Viewer = ({ date, hasOrientationPermission }: ViewerProps) => {
     const { current } = ref;
     if (current) {
       setLoading(true);
+      const cont = renderIntoDiv(current, hasOrientationPermission);
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           Promise.all([
             fetchBodies(pos.coords.latitude, pos.coords.longitude),
             fetchEarth(pos.coords.latitude, pos.coords.longitude, date),
-          ]).then(([body, earth]) => {
-            renderIntoCanvas(current, body, earth, hasOrientationPermission);
+          ]).then(([bodies, earth]) => {
+            cont(bodies, earth);
             setDistance(`${Math.round(earth.distance_miles)} miles`);
             setLoading(false);
           });
@@ -64,8 +76,7 @@ const Viewer = ({ date, hasOrientationPermission }: ViewerProps) => {
 
   return (
     <Wrapper>
-      {loading ? "Loading ..." : ""}
-      <Wrapper style={{ visibility: loading ? "hidden" : "visible" }}>
+      <Wrapper>
         <ThreeContainer ref={ref} />
         <InfoWrap>
           <p>Distance from previous earth position: {distance}</p>
@@ -79,6 +90,9 @@ const Viewer = ({ date, hasOrientationPermission }: ViewerProps) => {
           </p>
         </InfoWrap>
       </Wrapper>
+      <LoaderWrapper show={loading}>
+        <Loader style={{ marginTop: 70 }} />
+      </LoaderWrapper>
     </Wrapper>
   );
 };

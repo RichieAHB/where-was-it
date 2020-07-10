@@ -140,8 +140,6 @@ const getControls = (hasOrientationPermission: boolean, camera: Camera) =>
 
 const renderIntoDiv = (
   div: HTMLDivElement,
-  bodies: FetchBodiesResponse,
-  { earth }: FetchEarthResponse,
   hasOrientationPermission: boolean
 ) => {
   const canvas = document.createElement("canvas");
@@ -245,22 +243,6 @@ const renderIntoDiv = (
 
   window.addEventListener("resize", onResize, false);
 
-  const moon = createBody(bodies.moon.az, bodies.moon.alt);
-  scene.add(moon);
-  const sun = createBody(bodies.sun.az, bodies.sun.alt, true, 0xffff00, 2);
-  scene.add(sun);
-  const earthThen = createBody(
-    earth.az,
-    earth.alt,
-    false,
-    Colors.earth.toNumber(),
-    1
-  );
-  scene.add(earthThen);
-  scene.add(bodyLine(moon));
-  scene.add(bodyLine(earthThen));
-  scene.add(bodyLine(sun));
-
   const northArrow = new ArrowHelper(
     new Vector3(0, 0, -1),
     new Vector3(0, 0, 0),
@@ -275,57 +257,79 @@ const renderIntoDiv = (
 
   scene.add(northArrow);
 
-  const directionalLight = new DirectionalLight(0xffffff, 1);
-  directionalLight.position.copy(sun.position);
-  scene.add(directionalLight);
-
   let animationFrame: number | null = null;
 
-  const earthPos3 = new Vector3();
-  const earthDir3 = new Vector3();
-  const earthPos = new Vector2();
-  const earthDir = new Vector2();
+  const renderFuncs: (() => void)[] = [];
 
   function animate() {
     animationFrame = requestAnimationFrame(animate);
-    camera.updateMatrixWorld();
-    camera.matrixWorldInverse.getInverse(camera.matrixWorld);
-    cameraViewProjectionMatrix.multiplyMatrices(
-      camera.projectionMatrix,
-      camera.matrixWorldInverse
-    );
-    frustum.setFromProjectionMatrix(cameraViewProjectionMatrix);
-    if (frustum.intersectsObject(earthThen)) {
-      direction.style.visibility = `hidden`;
-    } else {
-      earthDir3
-        .copy(arrowNDCCoord)
-        .unproject(camera);
-      earthPos3.copy(earthThen.position);
-      const cameraPos = new Vector3();
-      camera.getWorldPosition(cameraPos);
-      camera.worldToLocal(earthPos3);
-      camera.worldToLocal(earthDir3);
-      earthPos3.normalize();
-      earthDir3.normalize();
-      earthPos.set(earthPos3.x, earthPos3.y);
-      earthDir.set(earthDir3.x, earthDir3.y);
-      const rotationAmount = MathUtils.radToDeg(
-        -earthPos.sub(earthDir).angle() + Math.PI / 2
-      );
-      direction.style.transform = `rotate(${rotationAmount}deg)`;
-      direction.style.visibility = `visible`;
-    }
+    renderFuncs.forEach((fn) => fn());
     controls.update();
     composer.render();
   }
 
   animate();
 
-  return () => {
-    animationFrame !== null && cancelAnimationFrame(animationFrame);
-    window.removeEventListener("resize", onResize, false);
-    controls.disconnect();
+  return (bodies: FetchBodiesResponse, { earth }: FetchEarthResponse) => {
+    const moon = createBody(bodies.moon.az, bodies.moon.alt);
+    scene.add(moon);
+    const sun = createBody(bodies.sun.az, bodies.sun.alt, true, 0xffff00, 2);
+    scene.add(sun);
+    const earthThen = createBody(
+      earth.az,
+      earth.alt,
+      false,
+      Colors.earth.toNumber(),
+      1
+    );
+    scene.add(earthThen);
+    scene.add(bodyLine(moon));
+    scene.add(bodyLine(earthThen));
+    scene.add(bodyLine(sun));
+
+    const directionalLight = new DirectionalLight(0xffffff, 1);
+    directionalLight.position.copy(sun.position);
+    scene.add(directionalLight);
+
+    const earthPos3 = new Vector3();
+    const earthDir3 = new Vector3();
+    const earthPos = new Vector2();
+    const earthDir = new Vector2();
+
+    renderFuncs.push(() => {
+      camera.updateMatrixWorld();
+      camera.matrixWorldInverse.getInverse(camera.matrixWorld);
+      cameraViewProjectionMatrix.multiplyMatrices(
+        camera.projectionMatrix,
+        camera.matrixWorldInverse
+      );
+      frustum.setFromProjectionMatrix(cameraViewProjectionMatrix);
+      if (frustum.intersectsObject(earthThen)) {
+        direction.style.visibility = `hidden`;
+      } else {
+        earthDir3.copy(arrowNDCCoord).unproject(camera);
+        earthPos3.copy(earthThen.position);
+        const cameraPos = new Vector3();
+        camera.getWorldPosition(cameraPos);
+        camera.worldToLocal(earthPos3);
+        camera.worldToLocal(earthDir3);
+        earthPos3.normalize();
+        earthDir3.normalize();
+        earthPos.set(earthPos3.x, earthPos3.y);
+        earthDir.set(earthDir3.x, earthDir3.y);
+        const rotationAmount = MathUtils.radToDeg(
+          -earthPos.sub(earthDir).angle() + Math.PI / 2
+        );
+        direction.style.transform = `rotate(${rotationAmount}deg)`;
+        direction.style.visibility = `visible`;
+      }
+    });
+
+    return () => {
+      animationFrame !== null && cancelAnimationFrame(animationFrame);
+      window.removeEventListener("resize", onResize, false);
+      controls.disconnect();
+    };
   };
 };
-export { renderIntoDiv as renderIntoCanvas };
+export { renderIntoDiv };
