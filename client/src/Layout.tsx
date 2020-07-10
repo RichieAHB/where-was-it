@@ -1,6 +1,7 @@
 import * as React from "react";
 import styled from "styled-components";
 import { useEffect, useState } from "react";
+import { deep, strong } from "./colors";
 
 const getWindowSize = () => ({
   height: window.innerHeight,
@@ -27,18 +28,18 @@ const Container = styled.div`
 `;
 
 const Bookend = styled.header`
-  background-color: #2b2a4d;
+  background-color: ${deep.toString()};
   color: white;
   flex-grow: 0;
   padding: 1em;
-  
+
   a {
     color: white;
   }
 `;
 
 const Title = styled.h1`
-  color: #d80480;
+  color: ${strong.toString()};
   font-size: 3rem;
   margin: 0 0 0.25em;
 `;
@@ -50,6 +51,9 @@ const Subtitle = styled.h2`
 `;
 
 const Main = styled.main`
+  border-color: #2b2a4d;
+  border-style: solid;
+  border-width: 1px 0;
   flex: 1;
 `;
 

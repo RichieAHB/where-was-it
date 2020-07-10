@@ -2,6 +2,7 @@ import * as React from "react";
 import { useCallback, useState } from "react";
 import { Input } from "./Input";
 import styled from "styled-components";
+import { deep } from "./colors";
 
 const FormWrapper = styled.div`
   justify-content: center;
@@ -13,12 +14,26 @@ const Form = styled.form`
   display: flex;
   flex: 1;
   flex-direction: column;
+  margin-bottom: 1em;
   max-width: 320px;
+
+  @media all and (max-width: 500px) {
+    max-width: 100%;
+  }
+`;
+
+const P = styled.p`
+  line-height: 1.75;
+  margin: 0;
+
+  & + & {
+    margin-top: 1em;
+  }
 `;
 
 const Button = styled.button`
   appearance: none;
-  background-color: #2b2a4d;
+  background-color: ${deep.toString()};
   border: none;
   border-radius: 0.5em;
   color: white;
@@ -40,6 +55,24 @@ const Button = styled.button`
     opacity: 0.5;
   }
 `;
+
+const Info = styled.aside`
+  background: #d80480;
+  border-radius: 0.5em;
+  color: white;
+  margin: 1em 0;
+  padding: 1em;
+
+  &:before {
+    content: "Note:";
+    display: block;
+    font-size: 1.25em;
+    font-weight: 700;
+    margin-bottom: 0.5em;
+  }
+`;
+
+const canUseOrientation = window.DeviceOrientationEvent.requestPermission;
 
 type DateInputProps = {
   onDateSelected: (date: string) => void;
@@ -72,7 +105,7 @@ const DateInput = ({ onDateSelected }: DateInputProps) => {
       const tzo = dateTime.getTimezoneOffset();
       const sign = tzo > 0 ? "-" : "+";
       const absTzo = Math.abs(tzo);
-      const hour = `${(absTzo / 60)}`.padStart(2, "0");
+      const hour = `${absTzo / 60}`.padStart(2, "0");
       const min = `${Math.floor(absTzo % 60)}`.padStart(2, "0");
       onDateSelected(`${date}T${time}:00${sign}${hour}:${min}`);
     },
@@ -80,10 +113,10 @@ const DateInput = ({ onDateSelected }: DateInputProps) => {
   );
   return (
     <>
-      <p>
+      <P>
         Select a date (perhaps the day you were born?) to visualize where the
         earth was (or will be) in the Solar System relative to where we are now:
-      </p>
+      </P>
       <FormWrapper>
         <Form onSubmit={onSubmit}>
           <Input
@@ -101,6 +134,16 @@ const DateInput = ({ onDateSelected }: DateInputProps) => {
           <Button>Find it</Button>
         </Form>
       </FormWrapper>
+      {!canUseOrientation && (
+        <Info>
+          <P>
+            This site is best viewed on a mobile device with orientiation
+            information. This will allow you to angle your phone to help you
+            determine the exact location in the sky. You can still use the site
+            on this device but it won't work as well.
+          </P>
+        </Info>
+      )}
     </>
   );
 };

@@ -15,7 +15,7 @@ const Wrapper = styled.div`
   width: 100%;
 `;
 
-const Canvas = styled.canvas`
+const ThreeContainer = styled.div`
   height: 100%;
   left: 0;
   position: absolute;
@@ -39,7 +39,7 @@ const Color = styled.span`
 `;
 
 const Viewer = ({ date, hasOrientationPermission }: ViewerProps) => {
-  const ref = useRef<HTMLCanvasElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [distance, setDistance] = useState("");
 
@@ -50,15 +50,8 @@ const Viewer = ({ date, hasOrientationPermission }: ViewerProps) => {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           Promise.all([
-            fetchBodies(
-              pos.coords.latitude,
-              pos.coords.longitude
-            ),
-            fetchEarth(
-              pos.coords.latitude,
-              pos.coords.longitude,
-              date
-            ),
+            fetchBodies(pos.coords.latitude, pos.coords.longitude),
+            fetchEarth(pos.coords.latitude, pos.coords.longitude, date),
           ]).then(([body, earth]) => {
             renderIntoCanvas(current, body, earth, hasOrientationPermission);
             setDistance(`${Math.round(earth.distance_miles)} miles`);
@@ -75,7 +68,7 @@ const Viewer = ({ date, hasOrientationPermission }: ViewerProps) => {
     <Wrapper>
       {loading ? "Loading ..." : ""}
       <Wrapper style={{ visibility: loading ? "hidden" : "visible" }}>
-        <Canvas ref={ref} />
+        <ThreeContainer ref={ref} />
         <Info>
           <p>Distance from previous earth position: {distance}</p>
           <p>

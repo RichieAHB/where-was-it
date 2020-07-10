@@ -7,7 +7,6 @@ import {
   Color,
   DirectionalLight,
   Geometry,
-  HemisphereLight,
   Line,
   LineBasicMaterial,
   MathUtils,
@@ -22,12 +21,16 @@ import {
   Vector2,
   Vector3,
   WebGLRenderer,
+  Raycaster,
+  Frustum,
+  Matrix4,
 } from "three";
 import { DeviceOrientationControls } from "three/examples/jsm/controls/DeviceOrientationControls";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
 import { FetchBodiesResponse, FetchEarthResponse } from "../servies/backend";
+import * as Colors from "../colors";
 
 const createBody = (
   az: number,
@@ -136,12 +139,28 @@ const getControls = (hasOrientationPermission: boolean, camera: Camera) =>
     ? new DeviceHeadingControls(camera)
     : new SpinControls(camera);
 
-const renderIntoCanvas = (
-  canvas: HTMLCanvasElement,
+const renderIntoDiv = (
+  div: HTMLDivElement,
   bodies: FetchBodiesResponse,
-  { earth, distance_miles }: FetchEarthResponse,
+  { earth }: FetchEarthResponse,
   hasOrientationPermission: boolean
 ) => {
+  const canvas = document.createElement("canvas");
+  canvas.style.width = "100%";
+  canvas.style.height = "100%";
+  div.appendChild(canvas);
+
+  const direction = document.createElement("div");
+  direction.innerText = "⇧";
+  direction.style.position = "absolute";
+  direction.style.left = "50%";
+  direction.style.top = "20px";
+  direction.style.marginLeft = "-10px";
+  direction.style.color = Colors.strong.toString();
+  direction.style.textShadow = "-2px -2px 4px rgba(0, 0, 0, 0.3)";
+  direction.style.fontSize = "24px";
+  div.appendChild(direction);
+
   const renderer = new WebGLRenderer({ canvas });
 
   const scene = new Scene();
@@ -195,10 +214,12 @@ const renderIntoCanvas = (
     ?.textContent!;
 
   const skyUniforms = {
-    skyTopColor: { value: new Color(0x6764a8) },
-    skyBottomColor: { value: new Color(0x565397) },
-    groundTopColor: { value: new Color(0x2b2a4d) },
-    groundBottomColor: { value: new Color(0x161427) },
+    skyTopColor: { value: new Color(Colors.deep.lighten(4).toNumber()) },
+    skyBottomColor: { value: new Color(Colors.deep.lighten(2).toNumber()) },
+    groundTopColor: { value: new Color(Colors.deep.toNumber()) },
+    groundBottomColor: {
+      value: new Color(Colors.deep.lighten(0.5).toNumber()),
+    },
     offset: { value: 0 },
     exponent: { value: 1 },
   };
@@ -214,16 +235,6 @@ const renderIntoCanvas = (
   const sky = new Mesh(domeGeo, skyMat);
   scene.add(sky);
 
-  let animationFrame: number | null = null;
-
-  function animate() {
-    animationFrame = requestAnimationFrame(animate);
-    controls.update();
-    composer.render();
-  }
-
-  animate();
-
   const line = document.createElement("div");
   document.body.appendChild(line);
 
@@ -233,7 +244,13 @@ const renderIntoCanvas = (
   scene.add(moon);
   const sun = createBody(bodies.sun.az, bodies.sun.alt, true, 0xffff00, 2);
   scene.add(sun);
-  const earthThen = createBody(earth.az, earth.alt, false, 0x88aaff, 1);
+  const earthThen = createBody(
+    earth.az,
+    earth.alt,
+    false,
+    Colors.earth.toNumber(),
+    1
+  );
   scene.add(earthThen);
   scene.add(bodyLine(moon));
   scene.add(bodyLine(earthThen));
@@ -243,10 +260,13 @@ const renderIntoCanvas = (
     new Vector3(0, 0, -1),
     new Vector3(0, 0, 0),
     2000,
-    0xd80480,
+    Colors.strong.toNumber(),
     0,
     0
   );
+
+  const frustum = new Frustum();
+  const cameraViewProjectionMatrix = new Matrix4();
 
   scene.add(northArrow);
 
@@ -254,10 +274,38 @@ const renderIntoCanvas = (
   directionalLight.position.copy(sun.position);
   scene.add(directionalLight);
 
+  let animationFrame: number | null = null;
+
+  function animate() {
+    animationFrame = requestAnimationFrame(animate);
+    camera.updateMatrixWorld();
+    camera.matrixWorldInverse.getInverse(camera.matrixWorld);
+    cameraViewProjectionMatrix.multiplyMatrices(
+      camera.projectionMatrix,
+      camera.matrixWorldInverse
+    );
+    frustum.setFromProjectionMatrix(cameraViewProjectionMatrix);
+    if (frustum.intersectsObject(earthThen)) {
+      direction.style.visibility = `hidden`;
+    } else {
+      const earthPos = earthThen.position.clone();
+      camera.worldToLocal(earthPos);
+      const earthDir = new Vector2(earthPos.x, earthPos.y).normalize();
+      direction.style.transform = `rotate(${MathUtils.radToDeg(
+        -earthDir.angle() + Math.PI / 2
+      )}deg)`;
+      direction.style.visibility = `visible`;
+    }
+    controls.update();
+    composer.render();
+  }
+
+  animate();
+
   return () => {
     animationFrame !== null && cancelAnimationFrame(animationFrame);
     window.removeEventListener("resize", onResize, false);
     controls.disconnect();
   };
 };
-export { renderIntoCanvas };
+export { renderIntoDiv as renderIntoCanvas };
