@@ -40,5 +40,6 @@ Kubernetes is definitely overkill for this but it was fun to see how user-friend
 
 ## TODO
 - [ ] Always more UI!
-- [ ] Better JS minification (i.e. not Parcel)
-- [ ] Explainer on what "position in the solar-system" actually means
+- [ ] Better JS minification (i.e. not Parcel).
+- [ ] Explain what "position in the solar-system" actually means.
+- [ ] Add some client-side routing for deep linking.
