@@ -193,10 +193,12 @@ const renderIntoDiv = (
     direction.style.left = "50%";
     direction.style.top = `${arrowTopPx}px`;
     direction.style.marginLeft = "-10px";
+    direction.style.marginTop = "-12px";
     direction.style.color = Colors.strong.toString();
     direction.style.textShadow = "-2px -2px 4px rgba(0, 0, 0, 0.3)";
     direction.style.transformOrigin = "50% 50%";
     direction.style.fontSize = "24px";
+    direction.style.lineHeight = "24px";
     div.appendChild(direction);
 
     const moon = createBody(bodies.moon.az, bodies.moon.alt);
@@ -233,24 +235,24 @@ const renderIntoDiv = (
       );
       frustum.setFromProjectionMatrix(cameraViewProjectionMatrix);
       if (frustum.intersectsObject(earthThen)) {
-        direction.style.visibility = `hidden`;
+        direction.style.opacity = "0.25";
       } else {
-        earthDir3.copy(arrowNDCCoord).unproject(camera);
-        earthPos3.copy(earthThen.position);
-        const cameraPos = new Vector3();
-        camera.getWorldPosition(cameraPos);
-        camera.worldToLocal(earthPos3);
-        camera.worldToLocal(earthDir3);
-        earthPos3.normalize();
-        earthDir3.normalize();
-        earthPos.set(earthPos3.x, earthPos3.y);
-        earthDir.set(earthDir3.x, earthDir3.y);
-        const rotationAmount = MathUtils.radToDeg(
-          -earthPos.sub(earthDir).angle() + Math.PI / 2
-        );
-        direction.style.transform = `rotate(${rotationAmount}deg)`;
-        direction.style.visibility = `visible`;
+        direction.style.opacity = "1";
       }
+      earthDir3.copy(arrowNDCCoord).unproject(camera);
+      earthPos3.copy(earthThen.position);
+      const cameraPos = new Vector3();
+      camera.getWorldPosition(cameraPos);
+      camera.worldToLocal(earthPos3);
+      camera.worldToLocal(earthDir3);
+      earthPos3.normalize();
+      earthDir3.normalize();
+      earthPos.set(earthPos3.x, earthPos3.y);
+      earthDir.set(earthDir3.x, earthDir3.y);
+      const rotationAmount = MathUtils.radToDeg(
+        -earthPos.sub(earthDir).angle() + Math.PI / 2
+      );
+      direction.style.transform = `rotate(${rotationAmount}deg)`;
     });
 
     return () => {

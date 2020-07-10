@@ -15,6 +15,7 @@ type ViewerProps = {
 const Wrapper = styled.div`
   height: 100%;
   position: relative;
+  user-select: none;
   width: 100%;
 `;
 
