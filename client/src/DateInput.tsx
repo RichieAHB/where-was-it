@@ -78,26 +78,14 @@ type DateInputProps = {
   onDateSelected: (date: string) => void;
 };
 
-function todayDate() {
-  const d = new Date();
-  const month = `${d.getMonth() + 1}`.padStart(2, "0");
-  const day = `${d.getDate()}`.padStart(2, "0");
-  const year = d.getFullYear();
-
-  return [year, month, day].join("-");
-}
-
-function todayTime() {
-  const d = new Date();
-  const hour = `${d.getHours()}`.padStart(2, "0");
-  const min = `${d.getMinutes()}`.padStart(2, "0");
-
-  return [hour, min].join(":");
-}
+const worldCupFinal1966 = {
+  date: "1966-07-03",
+  time: "19:30",
+};
 
 const DateInput = ({ onDateSelected }: DateInputProps) => {
-  const [date, setDate] = useState(todayDate);
-  const [time, setTime] = useState(todayTime);
+  const [date, setDate] = useState(worldCupFinal1966.date);
+  const [time, setTime] = useState(worldCupFinal1966.time);
   const onSubmit = useCallback(
     (e) => {
       e.preventDefault();
