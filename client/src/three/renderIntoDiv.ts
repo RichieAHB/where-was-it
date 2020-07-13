@@ -31,6 +31,7 @@ import { FetchBodiesResponse, FetchEarthResponse } from "../servies/backend";
 import * as Colors from "../colors";
 import { SpinControls } from "./SpinControls";
 import { DeviceHeadingControls } from "./DeviceHeadingControls";
+import { Body } from "./Body";
 
 const createBody = (
   az: number,
@@ -70,6 +71,7 @@ const renderIntoDiv = (
   div: HTMLDivElement,
   hasOrientationPermission: boolean
 ) => {
+  div.style.overflow = "hidden";
   const canvas = document.createElement("canvas");
   canvas.style.width = "100%";
   canvas.style.height = "100%";
@@ -186,7 +188,10 @@ const renderIntoDiv = (
 
   animate();
 
-  return (bodies: FetchBodiesResponse, { earth }: FetchEarthResponse) => {
+  return (
+    bodies: FetchBodiesResponse,
+    { earth, distance_miles }: FetchEarthResponse
+  ) => {
     const direction = document.createElement("div");
     direction.innerText = "⇧";
     direction.style.position = "absolute";
@@ -201,25 +206,41 @@ const renderIntoDiv = (
     direction.style.lineHeight = "24px";
     div.appendChild(direction);
 
-    const moon = createBody(bodies.moon.az, bodies.moon.alt);
-    scene.add(moon);
-    const sun = createBody(bodies.sun.az, bodies.sun.alt, true, 0xffff00, 2);
-    scene.add(sun);
-    const earthThen = createBody(
+    const moon = Body.create(
+      "Moon (current position)",
+      bodies.moon.az,
+      bodies.moon.alt
+    );
+    scene.add(moon.mesh);
+    const sun = Body.create(
+      "Sun (current position)",
+      bodies.sun.az,
+      bodies.sun.alt,
+      {
+        basic: true,
+        color: 0xffff00,
+        size: 2,
+      }
+    );
+    scene.add(sun.mesh);
+    const earthThen = Body.create(
+      `Earth (then): ${Math.round(distance_miles).toLocaleString("en-GB")} miles`,
       earth.az,
       earth.alt,
-      false,
-      Colors.earth.toNumber(),
-      1
+      {
+        color: Colors.earth.toNumber(),
+      }
     );
-    scene.add(earthThen);
-    scene.add(bodyLine(moon));
-    scene.add(bodyLine(earthThen));
-    scene.add(bodyLine(sun));
+    scene.add(earthThen.mesh);
+    scene.add(bodyLine(moon.mesh));
+    scene.add(bodyLine(earthThen.mesh));
+    scene.add(bodyLine(sun.mesh));
 
     const directionalLight = new DirectionalLight(0xffffff, 1);
-    directionalLight.position.copy(sun.position);
+    directionalLight.position.copy(sun.mesh.position);
     scene.add(directionalLight);
+
+    [moon, earthThen, sun].forEach((body) => body.appendLabel(div));
 
     const earthPos3 = new Vector3();
     const earthDir3 = new Vector3();
@@ -234,13 +255,13 @@ const renderIntoDiv = (
         camera.matrixWorldInverse
       );
       frustum.setFromProjectionMatrix(cameraViewProjectionMatrix);
-      if (frustum.intersectsObject(earthThen)) {
+      if (frustum.intersectsObject(earthThen.mesh)) {
         direction.style.opacity = "0.25";
       } else {
         direction.style.opacity = "1";
       }
       earthDir3.copy(arrowNDCCoord).unproject(camera);
-      earthPos3.copy(earthThen.position);
+      earthPos3.copy(earthThen.mesh.position);
       const cameraPos = new Vector3();
       camera.getWorldPosition(cameraPos);
       camera.worldToLocal(earthPos3);
@@ -253,6 +274,9 @@ const renderIntoDiv = (
         -earthPos.sub(earthDir).angle() + Math.PI / 2
       );
       direction.style.transform = `rotate(${rotationAmount}deg)`;
+      [moon, earthThen, sun].forEach((body) =>
+        body.moveLabel(renderer, camera)
+      );
     });
 
     return () => {
