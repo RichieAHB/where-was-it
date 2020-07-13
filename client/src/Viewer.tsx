@@ -86,16 +86,22 @@ const Viewer = ({ date, hasOrientationPermission }: ViewerProps) => {
       <LoaderWrapper show={loading}>
         <Loader style={{ marginTop: 70 }} />
       </LoaderWrapper>
-      <InfoWrap>
-        <p>Distance from previous earth position: {distance}</p>
-        <p>
-          The <Color color="white">white</Color> dot is the moon in its current
-          position, the <Color color="yellow">yellow</Color> is the sun in its
-          current position and the <Color color="#88aaff">light blue</Color> is
-          the earth position at the date specified. The{" "}
-          <Color color={Colors.strong.toString()}>pink</Color> line is North.
-        </p>
-      </InfoWrap>
+      {!loading && (
+        <InfoWrap>
+          <p>
+            Distance from earth position on {new Date(date).toLocaleString()} is{" "}
+            {distance}.
+          </p>
+          <p>
+            The <Color color="white">white</Color> dot is the moon in its
+            current position, the <Color color="yellow">yellow</Color> is the
+            sun in its current position and the{" "}
+            <Color color="#88aaff">light blue</Color> is the earth position at
+            the date specified. The{" "}
+            <Color color={Colors.strong.toString()}>pink</Color> line is North.
+          </p>
+        </InfoWrap>
+      )}
     </Wrapper>
   );
 };
