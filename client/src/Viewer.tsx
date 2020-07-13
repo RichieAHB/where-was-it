@@ -66,7 +66,11 @@ const Viewer = ({ date, hasOrientationPermission }: ViewerProps) => {
             fetchEarth(pos.coords.latitude, pos.coords.longitude, date),
           ]).then(([bodies, earth]) => {
             cont(bodies, earth);
-            setDistance(`${Math.round(earth.distance_miles)} miles`);
+            setDistance(
+              `${Math.round(earth.distance_miles).toLocaleString(
+                "en-GB"
+              )} miles`
+            );
             setLoading(false);
           });
         },
