@@ -1,5 +1,5 @@
 import { Camera, MathUtils } from "three";
-import { DeviceOrientationControls } from "three/examples/jsm/controls/DeviceOrientationControls";
+import { DeviceOrientationControls } from "./DeviceOrientationControls";
 
 class DeviceHeadingControls extends DeviceOrientationControls {
   private readonly onDeviceOrientation: (e: DeviceOrientationEvent) => void;
